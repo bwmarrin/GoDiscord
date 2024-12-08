@@ -1,5 +1,7 @@
 on:
   push:
+    branches:
+      - master
   pull_request:
 
 name: CI
@@ -8,12 +10,12 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.18
       - name: Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
       - name: Check diff between gofmt and code
         run: diff <(gofmt -d .) <(echo -n)
   
@@ -21,40 +23,32 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: [1.13, 1.14, 1.15, 1.16, 1.17, 1.18]
+        go-version: ["1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21", "1.22"]
     steps:
+      - name: Code
+        uses: actions/checkout@v4
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
-      - name: Code
-        uses: actions/checkout@v3
       - run: go test -v -race ./...
   
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.18
       - name: Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
       - name: Go vet
         run: go vet -x ./...
 
       - name: GolangCI-Lint
         uses: golangci/golangci-lint-action@v3
-        if: github.event.name == 'pull_request'
         with:
-          only-new-issues: true
           skip-pkg-cache: true
           skip-build-cache: true
-      
-      - name: GolangCI-Lint
-        if: github.event.name != 'pull_request' # See https://github.com/golangci/golangci-lint-action/issues/362
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
-
-          $(go env GOPATH)/bin/golangci-lint run
-
+          version: v1.54
+          args: --out-format colored-line-number
