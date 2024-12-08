@@ -968,6 +968,87 @@ func (g *GuildPreview) IconURL(size string) string {
 	return iconURL(g.Icon, EndpointGuildIcon(g.ID, g.Icon), EndpointGuildIconAnimated(g.ID, g.Icon), size)
 }
 
+// Guild Scheduled Event Recurrence Rule - Frequency
+// https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-recurrence-rule-object-guild-scheduled-event-recurrence-rule-frequency
+type RecurrenceRuleFrequency int
+
+const (
+	YEARLY  RecurrenceRuleFrequency = 0
+	MONTHLY RecurrenceRuleFrequency = 1
+	WEEKLY  RecurrenceRuleFrequency = 2
+	DAILY   RecurrenceRuleFrequency = 3
+)
+
+// Guild Scheduled Event Recurrence Rule - Weekday
+// https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-recurrence-rule-object-guild-scheduled-event-recurrence-rule-weekday
+type RecurrenceRuleWeekday int
+
+const (
+	MONDAY    RecurrenceRuleWeekday = 0
+	TUESDAY   RecurrenceRuleWeekday = 1
+	WEDNESDAY RecurrenceRuleWeekday = 2
+	THURSDAY  RecurrenceRuleWeekday = 3
+	FRIDAY    RecurrenceRuleWeekday = 4
+	SATURDAY  RecurrenceRuleWeekday = 5
+	SUNDAY    RecurrenceRuleWeekday = 6
+)
+
+// Guild Scheduled Event Recurrence Rule - N_Weekday Structure
+// https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-recurrence-rule-object-guild-scheduled-event-recurrence-rule-nweekday-structure
+type RecurrenceRuleNWeekDay struct {
+	// The week to reoccur on. 1 - 5
+	N int `json:"n"`
+	// The day within the week to reoccur on
+	Day RecurrenceRuleWeekday `json:"day"`
+}
+
+// Guild Scheduled Event Recurrence Rule - RecurrenceRuleMonth
+type RecurrenceRuleMonth int
+
+const (
+	JANUARY   RecurrenceRuleMonth = 1
+	FEBRUARY  RecurrenceRuleMonth = 2
+	MARCH     RecurrenceRuleMonth = 3
+	APRIL     RecurrenceRuleMonth = 4
+	MAY       RecurrenceRuleMonth = 5
+	JUNE      RecurrenceRuleMonth = 6
+	JULY      RecurrenceRuleMonth = 7
+	AUGUST    RecurrenceRuleMonth = 8
+	SEPTEMBER RecurrenceRuleMonth = 9
+	OCTOBER   RecurrenceRuleMonth = 10
+	NOVEMBER  RecurrenceRuleMonth = 11
+	DECEMBER  RecurrenceRuleMonth = 12
+)
+
+// Discord's recurrence rule is a subset of the behaviors defined in the iCalendar RFC and implemented by python's dateutil rrule
+// https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-recurrence-rule-object
+// NOTE: There are currently many limitations to this system. Please see "System limitations" at the link above
+type RecurrenceRule struct {
+	// Starting time of the recurrence interval (ISO8601 timestamp)
+	Start time.Time `json:"start"`
+	// Ending time of the recurrence interval (ISO8601 timestamp)
+	// NOTE: Cannot be set externally currently.
+	End *time.Time `json:"end,omitempty"`
+	// How often the event occurs
+	Frequency RecurrenceRuleFrequency `json:"frequency"`
+	// The spacing between the events, defined by frequency.
+	// For example, frequency of WEEKLY and an interval of 2 would be "every-other week"
+	Interval int `json:"interval"`
+	// Set of specific days within a week for the event to recur on
+	ByWeekday []RecurrenceRuleWeekday `json:"by_weekday,omitempty"`
+	// List of specific days within a specific week (1-5) to recur on
+	ByNWeekday []RecurrenceRuleNWeekDay `json:"by_n_weekday,omitempty"`
+	// Set of specific months to recur on
+	ByMonth []RecurrenceRuleMonth `json:"by_month,omitempty"`
+	// Set of specific dates within a month to recur on
+	ByMonthDay []int `json:"by_month_day,omitempty"`
+	// Set of days within a year to recur on (1-364)
+	// NOTE: Cannot be set externally currently.
+	ByYearDay []int `json:"by_year_day,omitempty"`
+	// The total amount of times that the event is allowed to recur before stopping
+	Count int `json:"count,omitempty"`
+}
+
 // GuildScheduledEvent is a representation of a scheduled event in a guild. Only for retrieval of the data.
 // https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event
 type GuildScheduledEvent struct {
@@ -1007,6 +1088,9 @@ type GuildScheduledEvent struct {
 	// see https://discord.com/developers/docs/reference#image-formatting for more
 	// information about image formatting
 	Image string `json:"image"`
+	// The definition for how often this event should recur
+	// https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-recurrence-rule-object
+	RecurrenceRule RecurrenceRule `json:"recurrence_rule,omitempty"`
 }
 
 // GuildScheduledEventParams are the parameters allowed for creating or updating a scheduled event
