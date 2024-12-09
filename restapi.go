@@ -532,8 +532,10 @@ func memberPermissions(guild *Guild, channel *Channel, userID string, roles []st
 		}
 	}
 
+	// administrator permissions imply all other permissions and bypasses overrides
 	if apermissions&PermissionAdministrator == PermissionAdministrator {
 		apermissions |= PermissionAll
+		return
 	}
 
 	// Apply @everyone overrides from the channel.
