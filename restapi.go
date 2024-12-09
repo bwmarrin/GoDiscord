@@ -2478,6 +2478,28 @@ func (s *Session) WebhookMessage(webhookID, token, messageID string, options ...
 	return
 }
 
+// WebhookThreadMessage gets a webhook message.
+// webhookID : The ID of a webhook
+// token     : The auth token for the webhook
+// messageID : The ID of message to get
+// threadID  : Get a message in the specified thread within a webhook's channel.
+func (s *Session) WebhookThreadMessage(webhookID, token, threadID, messageID string, options ...RequestOption) (message *Message, err error) {
+	uri := EndpointWebhookMessage(webhookID, token, messageID)
+
+	v := url.Values{}
+	v.Set("thread_id", threadID)
+	uri += "?" + v.Encode()
+
+	body, err := s.RequestWithBucketID("GET", uri, nil, EndpointWebhookToken("", ""), options...)
+	if err != nil {
+		return
+	}
+
+	err = Unmarshal(body, &message)
+
+	return
+}
+
 // WebhookMessageEdit edits a webhook message and returns a new one.
 // webhookID : The ID of a webhook
 // token     : The auth token for the webhook
@@ -2508,12 +2530,63 @@ func (s *Session) WebhookMessageEdit(webhookID, token, messageID string, data *W
 	return
 }
 
+// WebhookThreadMessageEdit edits a webhook message in a thread and returns a new one.
+// webhookID : The ID of a webhook
+// token     : The auth token for the webhook
+// messageID : The ID of message to edit
+// threadID  : Edits a message in the specified thread within a webhook's channel.
+func (s *Session) WebhookThreadMessageEdit(webhookID, token, threadID, messageID string, data *WebhookEdit, options ...RequestOption) (st *Message, err error) {
+	uri := EndpointWebhookMessage(webhookID, token, messageID)
+
+	v := url.Values{}
+	v.Set("thread_id", threadID)
+	uri += "?" + v.Encode()
+
+	var response []byte
+	if len(data.Files) > 0 {
+		contentType, body, err := MultipartBodyWithJSON(data, data.Files)
+		if err != nil {
+			return nil, err
+		}
+
+		response, err = s.request("PATCH", uri, contentType, body, uri, 0, options...)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		response, err = s.RequestWithBucketID("PATCH", uri, data, EndpointWebhookToken("", ""), options...)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = unmarshal(response, &st)
+	return
+}
+
 // WebhookMessageDelete deletes a webhook message.
 // webhookID : The ID of a webhook
 // token     : The auth token for the webhook
 // messageID : The ID of a message to edit
 func (s *Session) WebhookMessageDelete(webhookID, token, messageID string, options ...RequestOption) (err error) {
 	uri := EndpointWebhookMessage(webhookID, token, messageID)
+
+	_, err = s.RequestWithBucketID("DELETE", uri, nil, EndpointWebhookToken("", ""), options...)
+	return
+}
+
+// WebhookThreadMessageDelete deletes a webhook message.
+// webhookID : The ID of a webhook
+// token     : The auth token for the webhook
+// messageID : The ID of a message to edit
+// threadID  : Deletes a message in the specified thread within a webhook's channel.
+func (s *Session) WebhookThreadMessageDelete(webhookID, token, threadID, messageID string, options ...RequestOption) (err error) {
+	uri := EndpointWebhookMessage(webhookID, token, messageID)
+
+	v := url.Values{}
+	v.Set("thread_id", threadID)
+	uri += "?" + v.Encode()
 
 	_, err = s.RequestWithBucketID("DELETE", uri, nil, EndpointWebhookToken("", ""), options...)
 	return
