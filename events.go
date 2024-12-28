@@ -366,6 +366,7 @@ type WebhooksUpdate struct {
 // InteractionCreate is the data for a InteractionCreate event
 type InteractionCreate struct {
 	*Interaction
+	Respond func(response *InteractionResponse) error `json:"-"`
 }
 
 // UnmarshalJSON is a helper function to unmarshal Interaction object.
