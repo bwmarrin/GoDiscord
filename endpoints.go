@@ -93,6 +93,7 @@ var (
 	EndpointGuildIcon                = func(gID, hash string) string { return EndpointCDNIcons + gID + "/" + hash + ".png" }
 	EndpointGuildIconAnimated        = func(gID, hash string) string { return EndpointCDNIcons + gID + "/" + hash + ".gif" }
 	EndpointGuildSplash              = func(gID, hash string) string { return EndpointCDNSplashes + gID + "/" + hash + ".png" }
+	EndpointGuildVoiceState          = func(gID, uID string) string { return EndpointGuilds + gID + "/voice-states/" + uID }
 	EndpointGuildWebhooks            = func(gID string) string { return EndpointGuilds + gID + "/webhooks" }
 	EndpointGuildAuditLogs           = func(gID string) string { return EndpointGuilds + gID + "/audit-logs" }
 	EndpointGuildEmojis              = func(gID string) string { return EndpointGuilds + gID + "/emojis" }

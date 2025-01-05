@@ -3704,3 +3704,18 @@ func (s *Session) Subscription(skuID, subscriptionID, userID string, options ...
 	err = unmarshal(body, &subscription)
 	return
 }
+
+// Returns the specified user's voice state in the guild.
+// guildID : ID of the guild.
+// userID : ID of the user.
+func (s *Session) UserVoiceState(guildID, userID string) (voiceState *VoiceState, err error) {
+	endpoint := EndpointGuildVoiceState(guildID, userID)
+	var body []byte
+	body, err = s.RequestWithBucketID("GET", endpoint, nil, endpoint)
+	if err != nil {
+		return
+	}
+
+	err = unmarshal(body, &voiceState)
+	return
+}
