@@ -338,9 +338,9 @@ type UserUpdate struct {
 
 // VoiceServerUpdate is the data for a VoiceServerUpdate event.
 type VoiceServerUpdate struct {
-	Token    string `json:"token"`
-	GuildID  string `json:"guild_id"`
-	Endpoint string `json:"endpoint"`
+	Token    string  `json:"token"`
+	GuildID  string  `json:"guild_id"`
+	Endpoint *string `json:"endpoint"`
 }
 
 // VoiceStateUpdate is the data for a VoiceStateUpdate event.

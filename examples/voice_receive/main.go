@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"time"
@@ -30,7 +31,7 @@ func createPionRTPPacket(p *discordgo.Packet) *rtp.Packet {
 		Header: rtp.Header{
 			Version: 2,
 			// Taken from Discord voice docs
-			PayloadType:    0x78,
+			PayloadType:    p.PayloadType,
 			SequenceNumber: p.Sequence,
 			Timestamp:      p.Timestamp,
 			SSRC:           p.SSRC,
@@ -39,7 +40,7 @@ func createPionRTPPacket(p *discordgo.Packet) *rtp.Packet {
 	}
 }
 
-func handleVoice(c chan *discordgo.Packet) {
+func handleVoice(c <-chan *discordgo.Packet) {
 	files := make(map[uint32]media.Writer)
 	for p := range c {
 		file, ok := files[p.SSRC]
@@ -83,7 +84,7 @@ func main() {
 		return
 	}
 
-	v, err := s.ChannelVoiceJoin(GuildID, ChannelID, true, false)
+	v, err := s.ChannelVoiceJoin(context.Background(), GuildID, ChannelID, true, false)
 	if err != nil {
 		fmt.Println("failed to join voice channel:", err)
 		return
@@ -91,9 +92,10 @@ func main() {
 
 	go func() {
 		time.Sleep(10 * time.Second)
-		close(v.OpusRecv)
-		v.Close()
+		v.Disconnect(context.Background())
 	}()
 
 	handleVoice(v.OpusRecv)
+
+	fmt.Println("exiting...")
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/binary"
 	"flag"
 	"fmt"
@@ -186,7 +187,9 @@ func loadSound() error {
 func playSound(s *discordgo.Session, guildID, channelID string) (err error) {
 
 	// Join the provided voice channel.
-	vc, err := s.ChannelVoiceJoin(guildID, channelID, false, true)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	vc, err := s.ChannelVoiceJoin(ctx, guildID, channelID, false, false)
+	cancel()
 	if err != nil {
 		return err
 	}
@@ -209,7 +212,9 @@ func playSound(s *discordgo.Session, guildID, channelID string) (err error) {
 	time.Sleep(250 * time.Millisecond)
 
 	// Disconnect from the provided voice channel.
-	vc.Disconnect()
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	vc.Disconnect(ctx)
+	cancel()
 
 	return nil
 }
